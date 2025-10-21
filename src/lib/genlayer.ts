@@ -2,10 +2,17 @@ import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 import type { EIP1193Provider, Address } from "viem";
 
+// Extract endpoint resolution to avoid duplication
+const resolveEndpoint = () => process.env.NEXT_PUBLIC_GENLAYER_API_URL || "https://studio.genlayer.com/api";
+
+// Singleton client instance - always use this for consistency
 let client = createClient({ 
   chain: studionet, 
-  endpoint: process.env.NEXT_PUBLIC_GENLAYER_API_URL || "https://studio.genlayer.com/api" 
+  endpoint: resolveEndpoint() 
 });
+
+// Track initialization state to prevent double-init
+let isInitialized = false;
 
 export function getClient() {
   return client;
@@ -19,16 +26,24 @@ export const contractAddress = (hasValidContractAddress ? (envAddress as Address
 export function attachSigner(provider: EIP1193Provider | undefined, address?: Address) {
   client = createClient({
     chain: studionet,
-    endpoint: process.env.NEXT_PUBLIC_GENLAYER_API_URL || "https://studio.genlayer.com/api",
+    endpoint: resolveEndpoint(),
     provider,
     account: address,
   });
+  // Reset initialization state when signer changes
+  isInitialized = false;
 }
 
-// Initialize consensus smart contract
+// Initialize consensus smart contract (idempotent)
 export async function initializeConsensusSmartContract() {
+  if (isInitialized) {
+    console.log("Consensus smart contract already initialized, skipping");
+    return;
+  }
+  
   try {
     await client.initializeConsensusSmartContract();
+    isInitialized = true;
     console.log("Consensus smart contract initialized successfully");
   } catch (error) {
     console.error("Failed to initialize consensus smart contract:", error);
@@ -155,10 +170,19 @@ export async function getPolicy() {
 
 export { TransactionStatus } from "genlayer-js/types";
 
-// Simple factory per spec
-export const makeClient = (address?: Address) =>
-  createClient({ 
-    chain: studionet, 
-    endpoint: process.env.NEXT_PUBLIC_GENLAYER_API_URL || "https://studio.genlayer.com/api", 
-    account: address 
-  });
+// Unified factory - always returns the singleton client with optional provider/account
+export const makeClient = (address?: Address, provider?: EIP1193Provider) => {
+  // If provider is provided, update the singleton client
+  if (provider) {
+    client = createClient({
+      chain: studionet,
+      endpoint: resolveEndpoint(),
+      provider,
+      account: address,
+    });
+    // Reset initialization state when client changes
+    isInitialized = false;
+  }
+  // Always return the singleton client
+  return client;
+};

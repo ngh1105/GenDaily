@@ -2,14 +2,21 @@
 import { useAccount } from "wagmi";
 import { useEffect, useMemo } from "react";
 import { makeClient } from "../lib/genlayer";
-import type { Address } from "viem";
+import type { Address, EIP1193Provider } from "viem";
 
 export function useGenlayerClient() {
   const { address } = useAccount();
-  const client = useMemo(() => makeClient(address as Address | undefined), [address]);
+  
+  // Get provider from globalThis.ethereum
+  const provider = useMemo(() => {
+    return (globalThis as { ethereum?: EIP1193Provider })?.ethereum;
+  }, []);
+  
+  // Create client with provider to ensure it's signed
+  const client = useMemo(() => makeClient(address as Address | undefined, provider), [address, provider]);
 
   useEffect(() => {
-    // initialize consensus if available
+    // Initialize consensus if available - this will be idempotent
     (client as { initializeConsensusSmartContract?: () => Promise<void> }).initializeConsensusSmartContract?.().catch(() => {});
   }, [client]);
 
