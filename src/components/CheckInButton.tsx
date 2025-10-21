@@ -207,7 +207,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
               <Button
                 variant="contained"
                 disableElevation
-                sx={{
+                sx={(theme) => ({
                   px: 6, 
                   py: 1.5, 
                   borderRadius: 2.5, 
@@ -215,35 +215,45 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
                   textTransform: "none",
                   fontSize: '15px',
                   fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
-                  background: 'linear-gradient(90deg, #22C55E 0%, #16A34A 100%)',
-                  boxShadow: '0 4px 10px rgba(22,163,74,0.25)',
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(90deg, #16A34A 0%, #15803D 100%)'
+                    : 'linear-gradient(90deg, #22C55E 0%, #16A34A 100%)',
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 4px 10px rgba(22,163,74,0.4)'
+                    : '0 4px 10px rgba(22,163,74,0.25)',
                   position: 'relative',
                   overflow: 'hidden',
                   minWidth: '140px',
                   '&:hover': {
                     transform: 'translateY(-1px)',
-                    boxShadow: '0 6px 14px rgba(22,163,74,0.3)',
-                    background: 'linear-gradient(90deg, #22C55E 0%, #16A34A 100%)',
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 6px 14px rgba(22,163,74,0.5)'
+                      : '0 6px 14px rgba(22,163,74,0.3)',
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(90deg, #16A34A 0%, #15803D 100%)'
+                      : 'linear-gradient(90deg, #22C55E 0%, #16A34A 100%)',
                   },
                   '&:active': {
                     transform: 'translateY(0px) scale(0.98)',
-                    boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 2px 8px rgba(22,163,74,0.4)'
+                      : '0 2px 8px rgba(22,163,74,0.25)',
                   },
                   '&.Mui-disabled': { 
-                    background: '#E5E7EB', 
-                    color: '#9CA3AF',
+                    background: theme.palette.action.disabledBackground, 
+                    color: theme.palette.text.disabled,
                     boxShadow: 'none',
                     transform: 'none',
                     cursor: 'not-allowed',
-                    border: '1px solid #D1D5DB',
+                    border: `1px solid ${theme.palette.divider}`,
                     '&:hover': {
-                      background: '#E5E7EB',
+                      background: theme.palette.action.disabledBackground,
                       transform: 'none',
                       boxShadow: 'none',
                     },
                   },
                   transition: 'all 0.2s ease',
-                }}
+                })}
                 onClick={handleCheckIn}
                 disabled={loading || disabled || !isContentValid}
               >
