@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { Button, Snackbar, Alert, Box, TextField, Tooltip } from "@mui/material";
-import { checkInWithContent, getClient, TransactionStatus } from "../lib/genlayer";
+import { checkInWithContent, getClient, TransactionStatus, getMyStats } from "../lib/genlayer";
 
 type Props = {
   disabled?: boolean;
@@ -14,6 +14,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   const [mounted, setMounted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [dailyContent, setDailyContent] = useState("");
+  const [previousTotalScore, setPreviousTotalScore] = useState<number | null>(null);
   
   // Lifecycle guards and cleanup
   const mountedRef = useRef<boolean>(true);
@@ -40,6 +41,18 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
     if (!mountedRef.current) return;
     setLoading(true);
     try {
+      // Get current total score before check-in
+      try {
+        const currentStats = await getMyStats();
+        const currentTotalScore = typeof currentStats === 'object' && currentStats !== null 
+          ? (currentStats as any).total_score || 0
+          : 0;
+        setPreviousTotalScore(Number(currentTotalScore));
+      } catch (error) {
+        console.warn("Could not fetch current stats:", error);
+        setPreviousTotalScore(null);
+      }
+
       const hash = await checkInWithContent(content);
       if (!mountedRef.current) return;
       
@@ -49,9 +62,30 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
       // Wait for FINALIZED in background (non-blocking UI)
       getClient()
         .waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, retries: 200, interval: 3000 })
-        .then(() => {
+        .then(async () => {
           if (!mountedRef.current) return;
-          setSnack({ open: true, msg: "🎉 You've checked in! +500 points earned.", severity: "success" });
+          
+          // Try to fetch actual points earned
+          try {
+            const newStats = await getMyStats();
+            const newTotalScore = typeof newStats === 'object' && newStats !== null 
+              ? (newStats as any).total_score || 0
+              : 0;
+            
+            const pointsEarned = previousTotalScore !== null 
+              ? Number(newTotalScore) - previousTotalScore 
+              : null;
+            
+            const successMessage = pointsEarned !== null && pointsEarned > 0
+              ? `🎉 You've checked in! +${pointsEarned} points earned.`
+              : "🎉 Check-in successful! Points earned.";
+            
+            setSnack({ open: true, msg: successMessage, severity: "success" });
+          } catch (error) {
+            console.warn("Could not fetch points earned:", error);
+            setSnack({ open: true, msg: "🎉 Check-in successful! Points earned.", severity: "success" });
+          }
+          
           setShowConfetti(true);
           
           // Store timeout ID for cleanup
