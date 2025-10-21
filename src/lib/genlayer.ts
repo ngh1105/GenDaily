@@ -22,7 +22,17 @@ const envAddress = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x95758c22476AB
 export const hasValidContractAddress = /^0x[a-fA-F0-9]{40}$/.test(envAddress);
 export const contractAddress = (hasValidContractAddress ? (envAddress as Address) : ("0x95758c22476ABC199C9A7698bFd083be84A08CF5" as Address));
 
-// attach signer from RainbowKit (EIP-1193 provider)
+/**
+ * Attaches a signer to the singleton client and resets initialization state.
+ * 
+ * @param provider - EIP-1193 provider (e.g., MetaMask)
+ * @param address - Account address to use for signing
+ * 
+ * Mutates: Updates the singleton client with new provider/account
+ * Resets: isInitialized flag to false (forces re-initialization)
+ * 
+ * Callers must ensure: Provider is valid and address matches provider's accounts
+ */
 export function attachSigner(provider: EIP1193Provider | undefined, address?: Address) {
   client = createClient({
     chain: studionet,
@@ -170,18 +180,24 @@ export async function getPolicy() {
 
 export { TransactionStatus } from "genlayer-js/types";
 
-// Unified factory - always returns the singleton client with optional provider/account
-export const makeClient = (address?: Address, provider?: EIP1193Provider) => {
-  // If provider is provided, update the singleton client
+/**
+ * Factory function that returns the singleton client, optionally updating it with new provider/account.
+ * 
+ * @param provider - EIP-1193 provider (e.g., MetaMask) - if provided, updates singleton
+ * @param address - Account address to use for signing - if provided with provider, updates singleton
+ * 
+ * Mutates: Updates singleton client ONLY if provider is provided
+ * Returns: Always returns the current singleton client
+ * Resets: isInitialized flag to false when provider is provided
+ * 
+ * Callers must ensure: Provider and address are valid when provided
+ * 
+ * Note: This function delegates to attachSigner when provider is provided to maintain consistency.
+ */
+export const makeClient = (provider?: EIP1193Provider, address?: Address) => {
+  // If provider is provided, delegate to attachSigner for consistency
   if (provider) {
-    client = createClient({
-      chain: studionet,
-      endpoint: resolveEndpoint(),
-      provider,
-      account: address,
-    });
-    // Reset initialization state when client changes
-    isInitialized = false;
+    attachSigner(provider, address);
   }
   // Always return the singleton client
   return client;

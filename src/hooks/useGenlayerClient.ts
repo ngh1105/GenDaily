@@ -1,23 +1,25 @@
 "use client";
 import { useAccount } from "wagmi";
-import { useEffect, useMemo, useState } from "react";
-import { makeClient } from "../lib/genlayer";
-import type { Address, EIP1193Provider } from "viem";
+import { useEffect, useMemo } from "react";
+import { getClient } from "../lib/genlayer";
 
+/**
+ * Hook lifecycle coordination:
+ * 
+ * 1. useGenlayerSigner runs first and calls attachSigner() to update singleton client
+ * 2. useGenlayerClient retrieves the singleton client via getClient()
+ * 3. Both hooks depend on isConnected/address changes to trigger updates
+ * 4. This ensures signer is attached before client is used for operations
+ * 
+ * No global singleton mutation occurs in this hook - it only reads the singleton
+ * that was updated by useGenlayerSigner via attachSigner().
+ */
 export function useGenlayerClient() {
   const { address, isConnected } = useAccount();
   
-  // State to track provider changes when wallet extension loads
-  const [provider, setProvider] = useState<EIP1193Provider | undefined>(undefined);
-  
-  // Update provider when wallet connection state changes
-  useEffect(() => {
-    const ethereum = (globalThis as { ethereum?: EIP1193Provider })?.ethereum;
-    setProvider(ethereum);
-  }, [isConnected, address]);
-  
-  // Create client with provider to ensure it's signed
-  const client = useMemo(() => makeClient(address as Address | undefined, provider), [address, provider]);
+  // Get the singleton client instance managed by attachSigner/useGenlayerSigner
+  // This avoids mutating the global singleton on every address/provider change
+  const client = useMemo(() => getClient(), [isConnected, address]);
 
   useEffect(() => {
     // Initialize consensus if available - this will be idempotent
