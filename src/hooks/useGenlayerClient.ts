@@ -1,7 +1,7 @@
 "use client";
 import { useAccount } from "wagmi";
 import { useEffect, useMemo } from "react";
-import { getClient } from "../lib/genlayer";
+import { getClient, initializeConsensusSmartContract } from "../lib/genlayer";
 
 /**
  * Hook lifecycle coordination:
@@ -22,8 +22,10 @@ export function useGenlayerClient() {
   const client = useMemo(() => getClient(), [isConnected, address]);
 
   useEffect(() => {
-    // Initialize consensus if available - this will be idempotent
-    (client as { initializeConsensusSmartContract?: () => Promise<void> }).initializeConsensusSmartContract?.().catch(() => {});
+    // Initialize consensus using the centralized, idempotent wrapper
+    initializeConsensusSmartContract().catch((error) => {
+      console.error("Failed to initialize consensus smart contract in useGenlayerClient:", error);
+    });
   }, [client]);
 
   return client;
