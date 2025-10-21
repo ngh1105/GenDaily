@@ -64,7 +64,7 @@ export function useIsCheckedToday() {
   const client = useGenlayerClient();
   const { address } = useAccount();
   return useQuery({
-    queryKey: ["checkedToday", CONTRACT],
+    queryKey: ["checkedToday", CONTRACT, address],
     queryFn: async () => client.readContract({ address: CONTRACT as `0x${string}`, functionName: "is_checked_today", args: [] }),
     enabled: Boolean(client && CONTRACT && address),
   });
