@@ -63,7 +63,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
         <TextField
           multiline
           rows={4}
-          placeholder="How was your day? What did you learn or build?"
+          placeholder="Daily check-in"
           disabled
           sx={{ width: '100%' }}
         />
@@ -100,7 +100,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
           aria-label="Daily check-in content"
           multiline
           rows={4}
-          placeholder="How was your day? What did you learn or build?"
+          placeholder="Daily check-in"
           value={dailyContent}
           onChange={(e) => setDailyContent(e.target.value)}
           disabled={loading || disabled}
