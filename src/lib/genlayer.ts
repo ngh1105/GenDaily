@@ -25,6 +25,17 @@ export function attachSigner(provider: EIP1193Provider | undefined, address?: Ad
   });
 }
 
+// Initialize consensus smart contract
+export async function initializeConsensusSmartContract() {
+  try {
+    await client.initializeConsensusSmartContract();
+    console.log("Consensus smart contract initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize consensus smart contract:", error);
+    throw error;
+  }
+}
+
 // Views
 export async function getMyStats() {
   if (!hasValidContractAddress) {
