@@ -131,10 +131,17 @@ export async function getDayRangeCounts(start: number, end: number) {
 // Write - Enhanced check-in with content
 export async function checkInWithContent(content: string) {
   if (!hasValidContractAddress) throw new Error("Contract address is not set");
+  
+  // Input validation: trim content and ensure it's not empty
+  const trimmedContent = content.trim();
+  if (trimmedContent.length === 0) {
+    throw new Error("Content must be non-empty");
+  }
+  
   return client.writeContract({
     address: contractAddress,
     functionName: "checkin_sentence",
-    args: [content],
+    args: [trimmedContent],
     value: BigInt(0),
   });
 }
