@@ -2,8 +2,8 @@
 
 import { Box, Container, Stack } from "@mui/material";
 import Navbar from "../components/Navbar";
-import StatsCard from "../components/StatsCard";
 import dynamic from "next/dynamic";
+const StatsCard = dynamic(() => import("../components/StatsCard"), { ssr: false });
 const CheckInButton = dynamic(() => import("../components/CheckInButton"), { ssr: false });
 import StreakChart from "../components/StreakChart";
 import SnackbarHost from "../components/SnackbarHost";
