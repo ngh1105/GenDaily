@@ -96,6 +96,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
       }}>
         {/* Textarea */}
         <TextField
+          key="checkin-textfield"
           label="Daily check-in"
           aria-label="Daily check-in content"
           multiline
