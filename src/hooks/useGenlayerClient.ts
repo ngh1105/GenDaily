@@ -1,6 +1,6 @@
 "use client";
 import { useAccount } from "wagmi";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { getClient, initializeConsensusSmartContract } from "../lib/genlayer";
 
 /**
@@ -16,18 +16,18 @@ import { getClient, initializeConsensusSmartContract } from "../lib/genlayer";
  */
 export function useGenlayerClient() {
   const { address, isConnected } = useAccount();
-  
-  // Get the singleton client instance managed by attachSigner/useGenlayerSigner
-  // This avoids mutating the global singleton on every address/provider change
-  const client = useMemo(() => getClient(), [isConnected, address]);
 
   useEffect(() => {
+    // Get fresh client reference and initialize consensus
+    const client = getClient();
+    
     // Initialize consensus using the centralized, idempotent wrapper
     initializeConsensusSmartContract().catch((error) => {
       console.error("Failed to initialize consensus smart contract in useGenlayerClient:", error);
     });
-  }, [client]);
+  }, [isConnected, address]);
 
-  return client;
+  // Return fresh client reference on each render
+  return getClient();
 }
 
