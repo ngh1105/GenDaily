@@ -15,6 +15,11 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [dailyContent, setDailyContent] = useState("");
   
+  // Content validation constants
+  const MAX_CONTENT = 280;
+  const content = dailyContent.trim();
+  const isContentValid = content.length > 0 && content.length <= MAX_CONTENT;
+  
   useEffect(() => setMounted(true), []);
 
   async function handleCheckIn() {
@@ -72,6 +77,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   const getButtonText = () => {
     if (loading) return "Checking in...";
     if (disabled) return "Checked ✓";
+    if (!isContentValid) return "Enter content to check in";
     return "Check In";
   };
 
@@ -90,13 +96,17 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
       }}>
         {/* Textarea */}
         <TextField
+          label="Daily check-in"
+          aria-label="Daily check-in content"
           multiline
           rows={4}
           placeholder="How was your day? What did you learn or build?"
           value={dailyContent}
           onChange={(e) => setDailyContent(e.target.value)}
           disabled={loading || disabled}
-          helperText={`${dailyContent.length} characters`}
+          inputProps={{ maxLength: MAX_CONTENT }}
+          error={!isContentValid && dailyContent.length > 0}
+          helperText={`${dailyContent.length}/${MAX_CONTENT} characters`}
           sx={{
             width: '100%',
             '& .MuiOutlinedInput-root': {
@@ -232,7 +242,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
                   transition: 'all 0.2s ease',
                 }}
                 onClick={handleCheckIn}
-                disabled={loading || disabled}
+                disabled={loading || disabled || !isContentValid}
               >
                 {getButtonText()}
               </Button>
