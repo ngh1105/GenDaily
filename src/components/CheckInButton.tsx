@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button, Snackbar, Alert, Box, TextField, Tooltip } from "@mui/material";
 import { checkInWithContent, getClient, TransactionStatus } from "../lib/genlayer";
 
@@ -15,17 +15,34 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [dailyContent, setDailyContent] = useState("");
   
+  // Lifecycle guards and cleanup
+  const mountedRef = useRef<boolean>(true);
+  const timeoutsRef = useRef<Set<number>>(new Set());
+  
   // Content validation constants
   const MAX_CONTENT = 280;
   const content = dailyContent.trim();
   const isContentValid = content.length > 0 && content.length <= MAX_CONTENT;
   
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    
+    // Cleanup function
+    return () => {
+      mountedRef.current = false;
+      // Clear all timers
+      timeoutsRef.current.forEach(clearTimeout);
+      timeoutsRef.current.clear();
+    };
+  }, []);
 
   async function handleCheckIn() {
+    if (!mountedRef.current) return;
     setLoading(true);
     try {
       const hash = await checkInWithContent(content);
+      if (!mountedRef.current) return;
+      
       setSnack({ open: true, msg: "Accepted… waiting for Finalized", severity: "info" });
       onAccepted?.();
       
@@ -33,17 +50,31 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
       getClient()
         .waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, retries: 200, interval: 3000 })
         .then(() => {
+          if (!mountedRef.current) return;
           setSnack({ open: true, msg: "🎉 You've checked in! +500 points earned.", severity: "success" });
           setShowConfetti(true);
-          setTimeout(() => setShowConfetti(false), 2000);
-          setDailyContent(""); // Clear content after successful check-in
+          
+          // Store timeout ID for cleanup
+          const timeoutId = setTimeout(() => {
+            if (mountedRef.current) {
+              setShowConfetti(false);
+            }
+          }, 2000);
+          timeoutsRef.current.add(timeoutId);
+          
+          if (mountedRef.current) {
+            setDailyContent(""); // Clear content after successful check-in
+          }
         })
         .catch(() => undefined);
     } catch (e: unknown) {
+      if (!mountedRef.current) return;
       const message = (e as Error)?.message || "Transaction failed";
       setSnack({ open: true, msg: message, severity: "error" });
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   }
 
