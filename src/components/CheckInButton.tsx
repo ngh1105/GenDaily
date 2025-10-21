@@ -108,53 +108,55 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
           inputProps={{ maxLength: MAX_CONTENT }}
           error={!isContentValid && dailyContent.length > 0}
           helperText={`${dailyContent.length}/${MAX_CONTENT} characters`}
-          sx={{
+          sx={(theme) => ({
             width: '100%',
             '& .MuiOutlinedInput-root': {
               borderRadius: 2.5,
-              backgroundColor: '#F9FAFB',
-              border: '1px solid #E5E7EB',
+              backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[50],
+              border: `1px solid ${theme.palette.divider}`,
               fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
               minHeight: '110px',
               padding: '14px 18px',
               fontSize: '14px',
-              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)',
+              boxShadow: theme.palette.mode === 'dark' 
+                ? 'inset 0 1px 2px rgba(255,255,255,0.02)' 
+                : 'inset 0 1px 2px rgba(0,0,0,0.02)',
               transition: 'all 0.2s ease',
               '&:hover': {
-                border: '1px solid #D1D5DB',
-                backgroundColor: '#FFFFFF',
+                border: `1px solid ${theme.palette.mode === 'dark' ? theme.palette.grey[600] : theme.palette.grey[300]}`,
+                backgroundColor: theme.palette.background.paper,
               },
               '&.Mui-focused': {
-                border: '1px solid #3B82F6',
-                backgroundColor: '#FFFFFF',
-                boxShadow: '0 0 0 3px rgba(59,130,246,0.1)',
+                border: `1px solid ${theme.palette.primary.main}`,
+                backgroundColor: theme.palette.background.paper,
+                boxShadow: `0 0 0 3px ${theme.palette.primary.main}20`,
               },
               '&.Mui-disabled': {
-                backgroundColor: '#F3F4F6',
+                backgroundColor: theme.palette.action.disabledBackground,
                 opacity: 0.7,
-                border: '1px solid #E5E7EB',
+                border: `1px solid ${theme.palette.divider}`,
               },
             },
             '& .MuiInputBase-input': {
-              color: '#111827',
+              color: theme.palette.text.primary,
               fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
               fontWeight: 400,
               fontSize: '13.5px',
               lineHeight: 1.5,
               '&::placeholder': {
-                color: '#9CA3AF',
+                color: theme.palette.text.secondary,
                 opacity: 1,
                 lineHeight: 1.5,
                 fontSize: '13.5px',
               },
             },
             '& .MuiFormHelperText-root': {
-              color: '#6B7280',
+              color: theme.palette.text.secondary,
               fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
               fontWeight: 500,
               fontSize: '12px',
             },
-          }}
+          })}
         />
         
         {/* Button Container */}
