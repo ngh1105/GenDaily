@@ -188,24 +188,22 @@ export async function getPolicy() {
 export { TransactionStatus } from "genlayer-js/types";
 
 /**
- * Factory function that returns the singleton client, optionally updating it with new provider/account.
+ * True factory function that creates and returns a new client instance.
  * 
- * @param provider - EIP-1193 provider (e.g., MetaMask) - if provided, updates singleton
- * @param address - Account address to use for signing - if provided with provider, updates singleton
+ * @param provider - EIP-1193 provider (e.g., MetaMask) - optional
+ * @param address - Account address to use for signing - optional
  * 
- * Mutates: Updates singleton client ONLY if provider is provided
- * Returns: Always returns the current singleton client
- * Resets: isInitialized flag to false when provider is provided
+ * Returns: Always returns a new client instance (no shared state mutation)
+ * Thread-safe: No race conditions as each call creates independent instance
  * 
- * Callers must ensure: Provider and address are valid when provided
- * 
- * Note: This function delegates to attachSigner when provider is provided to maintain consistency.
+ * Note: This is a pure factory - it does not mutate any module-level state.
+ * For singleton management, use attachSigner() + getClient() pattern instead.
  */
 export const makeClient = (provider?: EIP1193Provider, address?: Address) => {
-  // If provider is provided, delegate to attachSigner for consistency
-  if (provider) {
-    attachSigner(provider, address);
-  }
-  // Always return the singleton client
-  return client;
+  return createClient({
+    chain: studionet,
+    endpoint: resolveEndpoint(),
+    provider,
+    account: address,
+  });
 };
