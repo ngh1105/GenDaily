@@ -3,6 +3,13 @@ import { useEffect, useState, useRef } from "react";
 import { Button, Snackbar, Alert, Box, TextField, Tooltip } from "@mui/material";
 import { checkInWithContent, getClient, TransactionStatus, getMyStats } from "../lib/genlayer";
 
+interface StatsResponse {
+  last_day?: number;
+  streak?: number;
+  total?: number;
+  total_score?: number;
+}
+
 type Props = {
   disabled?: boolean;
   onAccepted?: () => void;
@@ -43,10 +50,8 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
     try {
       // Get current total score before check-in
       try {
-        const currentStats = await getMyStats();
-        const currentTotalScore = typeof currentStats === 'object' && currentStats !== null 
-          ? (currentStats as any).total_score || 0
-          : 0;
+        const currentStats = await getMyStats() as StatsResponse | null;
+        const currentTotalScore = currentStats?.total_score ?? 0;
         setPreviousTotalScore(Number(currentTotalScore));
       } catch (error) {
         console.warn("Could not fetch current stats:", error);
@@ -67,10 +72,8 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
           
           // Try to fetch actual points earned
           try {
-            const newStats = await getMyStats();
-            const newTotalScore = typeof newStats === 'object' && newStats !== null 
-              ? (newStats as any).total_score || 0
-              : 0;
+            const newStats = await getMyStats() as StatsResponse | null;
+            const newTotalScore = newStats?.total_score ?? 0;
             
             const pointsEarned = previousTotalScore !== null 
               ? Number(newTotalScore) - previousTotalScore 
@@ -228,35 +231,55 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
         <Box sx={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
           {/* Confetti Effect */}
           {showConfetti && (
-            <Box sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              pointerEvents: 'none',
-              zIndex: 1000,
+            <Box sx={(theme) => {
+              const confettiColors = [
+                theme.palette.success?.main || '#39FF14',
+                theme.palette.primary?.main || '#1565c0',
+                theme.palette.error?.main || '#ff6b6b',
+                theme.palette.warning?.main || '#feca57'
+              ];
+              
+              return {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none',
+                zIndex: 1000,
+                '& > div': {
+                  position: 'absolute',
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  animation: `confetti 1.5s ease-out forwards`,
+                  '@keyframes confetti': {
+                    '0%': {
+                      transform: 'translate(0, 0) rotate(0deg)',
+                      opacity: 1,
+                    },
+                    '100%': {
+                      transform: `translate(${(Math.random() - 0.5) * 200}px, ${Math.random() * 200 + 100}px) rotate(720deg)`,
+                      opacity: 0,
+                    },
+                  },
+                }
+              };
             }}>
               {[...Array(12)].map((_, i) => (
                 <Box
                   key={i}
-                  sx={{
-                    position: 'absolute',
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: ['#39FF14', '#1565c0', '#ff6b6b', '#feca57'][i % 4],
-                    animation: `confetti 1.5s ease-out forwards`,
-                    animationDelay: `${i * 0.1}s`,
-                    '@keyframes confetti': {
-                      '0%': {
-                        transform: 'translate(0, 0) rotate(0deg)',
-                        opacity: 1,
-                      },
-                      '100%': {
-                        transform: `translate(${(Math.random() - 0.5) * 200}px, ${Math.random() * 200 + 100}px) rotate(720deg)`,
-                        opacity: 0,
-                      },
-                    },
+                  sx={(theme) => {
+                    const confettiColors = [
+                      theme.palette.success?.main || '#39FF14',
+                      theme.palette.primary?.main || '#1565c0',
+                      theme.palette.error?.main || '#ff6b6b',
+                      theme.palette.warning?.main || '#feca57'
+                    ];
+                    
+                    return {
+                      bgcolor: confettiColors[i % 4],
+                      animationDelay: `${i * 0.1}s`,
+                    };
                   }}
                 />
               ))}
