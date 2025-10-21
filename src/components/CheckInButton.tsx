@@ -196,7 +196,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
           )}
 
           <Tooltip 
-            title={disabled ? "Bạn đã check-in hôm nay rồi!" : ""} 
+            title={disabled ? "You've already checked in today!" : ""} 
             placement="top"
             arrow
           >
