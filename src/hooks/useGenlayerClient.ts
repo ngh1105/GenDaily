@@ -18,9 +18,6 @@ export function useGenlayerClient() {
   const { address, isConnected } = useAccount();
 
   useEffect(() => {
-    // Get fresh client reference and initialize consensus
-    const client = getClient();
-    
     // Initialize consensus using the centralized, idempotent wrapper
     initializeConsensusSmartContract().catch((error) => {
       console.error("Failed to initialize consensus smart contract in useGenlayerClient:", error);

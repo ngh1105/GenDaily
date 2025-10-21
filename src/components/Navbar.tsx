@@ -2,7 +2,6 @@
 import { AppBar, Toolbar, Typography, IconButton, Stack, Tooltip, Box } from "@mui/material";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
 const ConnectWallet = dynamic(() => import("./ConnectWallet"), { ssr: false });
 
 type Props = { dark: boolean; toggleDark: () => void };

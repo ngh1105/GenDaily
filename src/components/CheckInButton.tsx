@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button, Snackbar, Alert, Box, TextField, Stack, Tooltip } from "@mui/material";
+import { Button, Snackbar, Alert, Box, TextField, Tooltip } from "@mui/material";
 import { checkInWithContent, getClient, TransactionStatus } from "../lib/genlayer";
 
 type Props = {
