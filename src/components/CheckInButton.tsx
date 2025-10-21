@@ -25,7 +25,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   async function handleCheckIn() {
     setLoading(true);
     try {
-      const hash = await checkInWithContent(dailyContent);
+      const hash = await checkInWithContent(content);
       setSnack({ open: true, msg: "Accepted… waiting for Finalized", severity: "info" });
       onAccepted?.();
       
