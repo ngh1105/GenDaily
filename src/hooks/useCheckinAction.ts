@@ -8,12 +8,15 @@ const CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x95758c22476ABC19
 
 export function useCheckinAction() {
   const qc = useQueryClient();
-  const client = useGenlayerClient();
+  const { client, isReady } = useGenlayerClient();
   const { address } = useAccount();
 
   return useMutation({
     // Optional content param for enhanced contract; default to empty string for compatibility
     mutationFn: async (content: string = "") => {
+      if (!client || !isReady) {
+        throw new Error("Client not initialized");
+      }
       const hash = await client.writeContract({
         address: CONTRACT as `0x${string}`,
         functionName: "checkin_sentence",

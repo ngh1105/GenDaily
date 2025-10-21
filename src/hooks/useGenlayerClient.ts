@@ -1,6 +1,6 @@
 "use client";
 import { useAccount } from "wagmi";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getClient, initializeConsensusSmartContract } from "../lib/genlayer";
 
 /**
@@ -16,18 +16,32 @@ import { getClient, initializeConsensusSmartContract } from "../lib/genlayer";
  */
 export function useGenlayerClient() {
   const { address, isConnected } = useAccount();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     // Only initialize if connected and has address
     if (isConnected && address) {
-      // Initialize consensus using the centralized, idempotent wrapper
-      initializeConsensusSmartContract().catch((error) => {
-        console.error("Failed to initialize consensus smart contract in useGenlayerClient:", error);
-      });
+      // Small delay to ensure signer is attached first
+      const timer = setTimeout(() => {
+        // Initialize consensus using the centralized, idempotent wrapper
+        initializeConsensusSmartContract()
+          .then(() => {
+            setIsReady(true);
+            console.log("GenLayer client ready for queries");
+          })
+          .catch((error) => {
+            console.error("Failed to initialize consensus smart contract in useGenlayerClient:", error);
+            setIsReady(false);
+          });
+      }, 100); // 100ms delay to ensure signer attachment completes
+
+      return () => clearTimeout(timer);
+    } else {
+      setIsReady(false);
     }
   }, [isConnected, address]);
 
   // Return fresh client reference on each render
-  return getClient();
+  return { client: getClient(), isReady };
 }
 
