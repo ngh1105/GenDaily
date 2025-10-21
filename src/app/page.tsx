@@ -27,6 +27,7 @@ export default function Page() {
   const lastDay = (stats as { last_day?: number })?.last_day;
   const streak = (stats as { streak?: number })?.streak ?? 0;
   const total = (stats as { total?: number })?.total ?? 0;
+  const totalScore = (stats as { total_score?: number })?.total_score ?? 0;
 
   // Custom cursor spotlight effect
   useEffect(() => {
@@ -55,82 +56,40 @@ export default function Page() {
   return (
     <Box sx={{
       minHeight: '100dvh',
-      background: `radial-gradient(1200px 600px at 70% 10%, rgba(21,101,192,.10), transparent),
-                   linear-gradient(180deg, #0e1a2b 0%, #0b1220 100%)`,
+      background: dark ? '#0F172A' : '#F4F5F7',
       position: 'relative',
       overflow: 'hidden',
-      // cursor: 'none', // Hide default cursor for custom spotlight
     }}>
-      {/* Custom cursor spotlight */}
-      <Box
-        sx={{
-          position: 'fixed',
-          width: '300px',
-          height: '300px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(57,255,20,.08) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          zIndex: 1000,
-          transition: 'transform 0.1s ease-out',
-          transform: 'translate(-50%, -50%)',
-          opacity: 0,
-          '&.visible': {
-            opacity: 1,
-          },
-        }}
-        className="cursor-spotlight"
-      />
-      
-      {/* Subtle spotlight effect */}
-      <Box sx={{
-        position: 'absolute',
-        top: '20%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '800px',
-        height: '600px',
-        background: 'radial-gradient(ellipse, rgba(57,255,20,.08) 0%, transparent 70%)',
-        pointerEvents: 'none',
-        zIndex: 0,
-      }} />
       
       <Navbar dark={dark} toggleDark={() => setDark((d) => !d)} />
       
       <Container sx={{ 
-        py: { xs: 4, md: 6 }, 
+        py: { xs: 4, sm: 6, md: 8 }, 
         position: 'relative', 
         zIndex: 1,
-        maxWidth: '1080px !important',
+        maxWidth: { xs: '100%', sm: '720px' },
         px: { xs: 2, sm: 3, md: 4 },
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: { xs: 'calc(100vh - 100px)', md: 'calc(100vh - 120px)' },
       }}>
-        <Stack spacing={{ xs: 3, md: 4 }} alignItems="center" sx={{ minHeight: 'calc(100vh - 120px)' }}>
-          {/* Hero Card with Glassmorphism */}
+        <Stack spacing={4} alignItems="center" sx={{ width: '100%', maxWidth: { xs: '100%', sm: '640px' } }}>
+          {/* Main Stats Card */}
           <Box sx={{
-            borderRadius: { xs: 4, md: 6 },
-            backdropFilter: 'blur(8px)',
-            background: 'linear-gradient(180deg, rgba(255,255,255,.9), rgba(246,248,251,.85))',
-            border: '1px solid rgba(255,255,255,.35)',
-            boxShadow: '0 20px 60px rgba(2,6,23,.25)',
-            p: { xs: 3, md: 4 },
+            borderRadius: 3,
+            background: dark ? '#1E293B' : '#FFFFFF',
+            border: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E5E7EB',
+            boxShadow: dark ? '0 2px 6px rgba(0,0,0,0.3)' : '0 2px 6px rgba(0,0,0,0.05)',
+            p: { xs: 3, sm: 4 },
             width: '100%',
-            maxWidth: { xs: '100%', sm: 500, md: 600 },
             position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent)',
-            },
             '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 25px 70px rgba(2,6,23,.35)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              boxShadow: dark ? '0 4px 12px rgba(0,0,0,0.4)' : '0 4px 12px rgba(0, 0, 0, 0.08)',
+              transition: 'all 0.2s ease-in-out',
             },
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: 'all 0.2s ease-in-out',
           }}>
             <StatsCard 
               loading={statsLoading || !isConnected} 
@@ -138,31 +97,27 @@ export default function Page() {
               lastDayIndex={isConnected ? lastDay : undefined} 
               streak={isConnected ? (streak as number) : 0} 
               total={isConnected ? (total as number) : 0} 
-              nextReset={nextReset} 
+              totalScore={isConnected ? (totalScore as number) : 0} 
+              nextReset={nextReset}
+              dark={dark}
             />
           </Box>
 
           {/* Streak Visualization */}
           {isConnected && last7 && (
             <Box sx={{
-              borderRadius: { xs: 4, md: 6 },
-              backdropFilter: 'blur(8px)',
-            background: 'linear-gradient(180deg, rgba(255,255,255,.9), rgba(246,248,251,.85))',
-            border: '1px solid rgba(255,255,255,.35)',
-            boxShadow: '0 20px 60px rgba(2,6,23,.25)',
-              p: { xs: 2, md: 3 },
+              borderRadius: 3,
+              background: dark ? '#1E293B' : '#FFFFFF',
+              border: dark ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E5E7EB',
+              boxShadow: dark ? '0 2px 6px rgba(0,0,0,0.3)' : '0 2px 6px rgba(0,0,0,0.05)',
+              p: { xs: 3, sm: 4 },
               width: '100%',
-              maxWidth: { xs: '100%', sm: 580, md: 640 },
               position: 'relative',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '1px',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent)',
+              '&:hover': {
+                boxShadow: dark ? '0 4px 12px rgba(0,0,0,0.4)' : '0 4px 12px rgba(0, 0, 0, 0.08)',
+                transition: 'all 0.2s ease-in-out',
               },
+              transition: 'all 0.2s ease-in-out',
             }}>
               <StreakChart start={last7.start} counts={last7.arr} loading={last7Loading} currentStreak={streak} lastDayIndex={lastDay} />
             </Box>

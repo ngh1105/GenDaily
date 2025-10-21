@@ -7,7 +7,6 @@ type Props = { start: number; counts: number[]; loading?: boolean; currentStreak
 export default function StreakChart({ start, counts, loading, currentStreak: propStreak, lastDayIndex }: Props) {
   if (loading) return <Skeleton variant="rounded" width={640} height={120} />;
   
-  const NEON = "#39FF14";
   // Derive checked state from user's streak if provided to avoid using global day counts
   const streak = Math.max(0, Number(propStreak ?? 0));
   const lastIndex = Number.isFinite(lastDayIndex) ? (lastDayIndex as number) : (start + counts.length - 1);
@@ -65,15 +64,19 @@ export default function StreakChart({ start, counts, loading, currentStreak: pro
           />
           <Typography variant="h6" sx={{ 
             fontWeight: 700,
-            background: 'linear-gradient(135deg, #1565c0, #39FF14)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            color: '#111827',
+            fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+            fontSize: '18px',
           }}>
             Current Streak
           </Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+        <Typography variant="body2" sx={{ 
+          fontWeight: 600,
+          color: '#6B7280',
+          fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+          fontSize: '14px',
+        }}>
           {currentStreak} {currentStreak === 1 ? 'day' : 'days'} in a row
         </Typography>
       </Stack>
@@ -85,22 +88,31 @@ export default function StreakChart({ start, counts, loading, currentStreak: pro
           value={Math.min(currentStreak / 7, 1) * 100} 
           sx={{ 
             height: 6, 
-            borderRadius: 3,
-            bgcolor: 'rgba(148,163,184,.15)',
+            borderRadius: 2,
+            bgcolor: '#F3F4F6',
             '& .MuiLinearProgress-bar': {
-              bgcolor: currentStreak >= 7 ? '#39FF14' : '#1565c0',
-              borderRadius: 3,
+              background: currentStreak >= 7 
+                ? 'linear-gradient(90deg, #22C55E, #10B981)' 
+                : 'linear-gradient(90deg, #22C55E, #10B981)',
+              borderRadius: 2,
             }
           }} 
         />
         {currentStreak === 0 && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+          <Typography variant="caption" sx={{ 
+            mt: 1, 
+            display: 'block', 
+            textAlign: 'center',
+            color: '#6B7280',
+            fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+            fontSize: '12px',
+          }}>
             Start your streak by checking in today!
           </Typography>
         )}
       </Box>
 
-      {/* Neon Circles */}
+      {/* Clean Squares */}
       <Stack 
         direction="row" 
         gap={2} 
@@ -114,11 +126,11 @@ export default function StreakChart({ start, counts, loading, currentStreak: pro
             height: 4,
           },
           '&::-webkit-scrollbar-track': {
-            bgcolor: 'rgba(148,163,184,.1)',
+            bgcolor: '#F3F4F6',
             borderRadius: 2,
           },
           '&::-webkit-scrollbar-thumb': {
-            bgcolor: 'rgba(148,163,184,.3)',
+            bgcolor: '#D1D5DB',
             borderRadius: 2,
           },
         }}
@@ -130,46 +142,50 @@ export default function StreakChart({ start, counts, loading, currentStreak: pro
           }}>
             <Box
               sx={{
-                width: 58, 
-                height: 58, 
-                borderRadius: '50%',
+                width: 48, 
+                height: 48, 
+                borderRadius: 2,
                 display: 'grid', 
                 placeItems: 'center',
-                bgcolor: item.checked ? '#39FF14' : 'rgba(148,163,184,.15)',
-                color: item.checked ? '#000' : 'text.secondary',
-                border: item.checked ? '2px solid #00c853' : '1px solid rgba(148,163,184,.25)',
-                boxShadow: item.checked
-                  ? `0 0 12px #39FF14, inset 0 0 10px #39FF14`
-                  : 'inset 0 0 10px rgba(0,0,0,.06)',
-                transition: 'transform .2s ease, box-shadow .2s ease',
+                bgcolor: item.checked ? '#16A34A' : '#F9FAFB',
+                color: item.checked ? '#FFFFFF' : '#9CA3AF',
+                border: item.checked ? 'none' : '1px solid #D1D5DB',
+                transition: 'all 0.2s ease-in-out',
                 ...(item.isToday && { 
-                  outline: `2px solid rgba(57,255,20,.35)`,
+                  outline: `2px solid #16A34A`,
                   outlineOffset: '2px',
                 }),
                 '&:hover': { 
-                  transform: 'translateY(-2px)',
+                  transform: 'translateY(-1px)',
+                  bgcolor: item.checked 
+                    ? '#16A34A'
+                    : '#E0F2FE',
+                  borderColor: item.checked 
+                    ? 'none'
+                    : '#3B82F6',
                   boxShadow: item.checked 
-                    ? `0 0 16px #39FF14, inset 0 0 12px #39FF14`
-                    : '0 4px 12px rgba(0,0,0,.15)',
+                    ? '0 4px 12px rgba(22,163,74,0.3)'
+                    : '0 2px 8px rgba(59,130,246,0.2)',
                 },
-                animation: `fadeInScale .4s ease ${i * 80}ms both`,
+                animation: `fadeInScale .3s ease ${i * 50}ms both`,
                 '@keyframes fadeInScale': { 
-                  from: { opacity: 0, transform: 'scale(.8)' }, 
+                  from: { opacity: 0, transform: 'scale(0.9)' }, 
                   to: { opacity: 1, transform: 'scale(1)' } 
                 },
               }}
               aria-label={`${item.label}: ${item.checked ? "checked" : "no check"}`}
             >
-              {item.checked && <CheckRounded sx={{ fontSize: 28 }} />}
+              {item.checked && <CheckRounded sx={{ fontSize: 24 }} />}
             </Box>
             <Typography 
               variant="caption" 
-              color="text.secondary" 
               sx={{ 
-                fontWeight: 600,
+                fontWeight: 500,
                 fontSize: '0.75rem',
                 textAlign: 'center',
                 minWidth: '40px',
+                color: '#6B7280',
+                fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
               }}
             >
               {item.label}
@@ -181,29 +197,32 @@ export default function StreakChart({ start, counts, loading, currentStreak: pro
       {/* Achievement Badges */}
       <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 3 }}>
         {[
-          { label: '7d', achieved: currentStreak >= 7, color: '#39FF14' },
-          { label: '30d', achieved: currentStreak >= 30, color: '#39FF14' },
-          { label: '100d', achieved: currentStreak >= 100, color: '#39FF14' },
+          { label: '7d', achieved: currentStreak >= 7, color: '#16A34A' },
+          { label: '30d', achieved: currentStreak >= 30, color: '#16A34A' },
+          { label: '100d', achieved: currentStreak >= 100, color: '#16A34A' },
         ].map((badge) => (
           <Box
             key={badge.label}
             sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
+              width: 36,
+              height: 36,
+              borderRadius: 2,
               display: 'grid',
               placeItems: 'center',
-              bgcolor: badge.achieved ? badge.color : 'rgba(148,163,184,.15)',
-              color: badge.achieved ? '#000' : 'text.secondary',
-              border: badge.achieved ? `2px solid ${badge.color}` : '1px solid rgba(148,163,184,.25)',
-              boxShadow: badge.achieved ? `0 0 8px ${badge.color}` : 'none',
+              bgcolor: badge.achieved ? badge.color : '#F9FAFB',
+              color: badge.achieved ? '#FFFFFF' : '#9CA3AF',
+              border: badge.achieved ? 'none' : '1px solid #D1D5DB',
               fontSize: '0.75rem',
               fontWeight: 700,
+              fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
               opacity: badge.achieved ? 1 : 0.6,
-              transition: 'all .2s ease',
+              transition: 'all 0.2s ease-in-out',
               '&:hover': { 
-                transform: 'scale(1.1)',
+                transform: 'scale(1.05)',
                 opacity: 1,
+                boxShadow: badge.achieved 
+                  ? '0 4px 12px rgba(22,163,74,0.3)'
+                  : '0 2px 8px rgba(0,0,0,0.1)',
               },
             }}
           >

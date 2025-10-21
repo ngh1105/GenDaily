@@ -9,7 +9,9 @@ type Props = {
   lastDayIndex?: number;
   streak?: number;
   total?: number;
+  totalScore?: number;
   nextReset?: number; // epoch seconds
+  dark?: boolean;
 };
 
 function formatCountdown(ms: number) {
@@ -21,7 +23,7 @@ function formatCountdown(ms: number) {
   return `${z(h)}:${z(m)}:${z(s)}`;
 }
 
-export default function StatsCard({ loading, isCheckedToday, streak, total, nextReset }: Props) {
+export default function StatsCard({ loading, isCheckedToday, streak, total, totalScore, nextReset, dark = false }: Props) {
   const [mounted, setMounted] = useState(false);
   const [remainMs, setRemainMs] = useState(0);
   
@@ -56,27 +58,29 @@ export default function StatsCard({ loading, isCheckedToday, streak, total, next
               filter: 'var(--text)',
             }}
           />
-          <Typography variant="h5" sx={{ 
-            fontWeight: 800, 
-            background: 'linear-gradient(135deg, #1565c0, #39FF14)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.02em',
+          <Typography variant="h4" sx={{ 
+            fontWeight: 700, 
+            color: dark ? '#F9FAFB' : '#111827',
+            letterSpacing: '0.2px',
+            fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+            fontSize: { xs: '20px', sm: '24px' },
           }}>
             Daily Check-in
           </Typography>
         </Box>
         {isCheckedToday && (
           <Chip 
-            icon={<CheckCircleRounded sx={{ fontSize: 20 }} />} 
-            label="Checked today" 
+            icon={<CheckCircleRounded sx={{ fontSize: 16 }} />} 
+            label="Today Checked" 
             sx={{ 
-              fontWeight: 700, 
-              bgcolor: '#1a7f37', 
-              color: '#fff',
-              '& .MuiChip-icon': { color: '#fff' },
-              boxShadow: '0 4px 12px rgba(26,127,55,.3)',
+              fontWeight: 600, 
+              bgcolor: '#F0FDF4', 
+              color: '#22C55E',
+              border: '1px solid #22C55E',
+              '& .MuiChip-icon': { color: '#22C55E' },
+              fontSize: '0.875rem',
+              height: '32px',
+              borderRadius: '16px',
             }} 
           />
         )}
@@ -92,21 +96,65 @@ export default function StatsCard({ loading, isCheckedToday, streak, total, next
       ) : (
         <Stack spacing={3}>
           {/* Stats Grid */}
-          <Stack direction="row" spacing={3} justifyContent="space-between">
+          <Stack direction="row" spacing={2} justifyContent="space-between">
             <Box sx={{ textAlign: 'center', flex: 1 }}>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#1565c0', mb: 0.5 }}>
+              <Typography variant="h2" sx={{ 
+                fontWeight: 800, 
+                color: '#16A34A', 
+                mb: 0.5,
+                fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                letterSpacing: '-0.02em',
+                fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+              }}>
                 {streak ?? 0}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+              <Typography variant="body1" sx={{ 
+                fontWeight: 500,
+                fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                color: dark ? '#9CA3AF' : '#6B7280',
+                fontSize: '16px',
+              }}>
                 Current Streak
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'center', flex: 1 }}>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#39FF14', mb: 0.5 }}>
+              <Typography variant="h2" sx={{ 
+                fontWeight: 800, 
+                color: '#3B82F6', 
+                mb: 0.5,
+                fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                letterSpacing: '-0.02em',
+                fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+              }}>
                 {total ?? 0}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
+              <Typography variant="body1" sx={{ 
+                fontWeight: 500,
+                fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                color: dark ? '#9CA3AF' : '#6B7280',
+                fontSize: '16px',
+              }}>
                 Total Days
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: 'center', flex: 1 }}>
+              <Typography variant="h2" sx={{ 
+                fontWeight: 800, 
+                color: '#F97316', 
+                mb: 0.5,
+                fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                letterSpacing: '-0.02em',
+                fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+              }}>
+                {totalScore ?? 0}
+              </Typography>
+              <Typography variant="body1" sx={{ 
+                fontWeight: 500,
+                fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                color: dark ? '#9CA3AF' : '#6B7280',
+                fontSize: '16px',
+              }}>
+                Total Score
               </Typography>
             </Box>
           </Stack>
@@ -115,8 +163,18 @@ export default function StatsCard({ loading, isCheckedToday, streak, total, next
           <Stack spacing={2}>
             <Box>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>7-Day Goal</Typography>
-                <Typography variant="body2" color="text.secondary">
+                 <Typography variant="body2" sx={{ 
+                   fontWeight: 600,
+                   fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                   color: dark ? '#E5E7EB' : '#6B7280',
+                   fontSize: '14px',
+                 }}>7-Day Goal</Typography>
+                <Typography variant="body2" sx={{
+                  fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                  fontWeight: 500,
+                  color: '#6B7280',
+                  fontSize: '14px',
+                }}>
                   {Math.min(streak ?? 0, 7)}/7
                 </Typography>
               </Stack>
@@ -125,11 +183,13 @@ export default function StatsCard({ loading, isCheckedToday, streak, total, next
                 value={progress7 * 100} 
                 sx={{ 
                   height: 8, 
-                  borderRadius: 4,
-                  bgcolor: 'rgba(148,163,184,.15)',
+                  borderRadius: 2,
+                  bgcolor: '#F3F4F6',
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: progress7 === 1 ? '#39FF14' : '#1565c0',
-                    borderRadius: 4,
+                    background: progress7 === 1 
+                      ? 'linear-gradient(90deg, #22C55E, #10B981)' 
+                      : 'linear-gradient(90deg, #22C55E, #10B981)',
+                    borderRadius: 2,
                   }
                 }} 
               />
@@ -137,8 +197,18 @@ export default function StatsCard({ loading, isCheckedToday, streak, total, next
             
             <Box>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>30-Day Goal</Typography>
-                <Typography variant="body2" color="text.secondary">
+                 <Typography variant="body2" sx={{ 
+                   fontWeight: 600,
+                   fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                   color: dark ? '#E5E7EB' : '#6B7280',
+                   fontSize: '14px',
+                 }}>30-Day Goal</Typography>
+                <Typography variant="body2" sx={{
+                  fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                  fontWeight: 500,
+                  color: '#6B7280',
+                  fontSize: '14px',
+                }}>
                   {Math.min(streak ?? 0, 30)}/30
                 </Typography>
               </Stack>
@@ -147,11 +217,13 @@ export default function StatsCard({ loading, isCheckedToday, streak, total, next
                 value={progress30 * 100} 
                 sx={{ 
                   height: 8, 
-                  borderRadius: 4,
-                  bgcolor: 'rgba(148,163,184,.15)',
+                  borderRadius: 2,
+                  bgcolor: '#F3F4F6',
                   '& .MuiLinearProgress-bar': {
-                    bgcolor: progress30 === 1 ? '#39FF14' : '#1565c0',
-                    borderRadius: 4,
+                    background: progress30 === 1 
+                      ? 'linear-gradient(90deg, #22C55E, #10B981)' 
+                      : 'linear-gradient(90deg, #22C55E, #10B981)',
+                    borderRadius: 2,
                   }
                 }} 
               />
@@ -163,13 +235,15 @@ export default function StatsCard({ loading, isCheckedToday, streak, total, next
             <Box sx={{
               display: 'inline-flex', 
               alignItems: 'center',
-              px: 2, 
-              py: 1, 
+              px: 3, 
+              py: 1.5, 
               borderRadius: 2,
-              bgcolor: 'rgba(148,163,184,.15)', 
-              color: 'text.secondary',
+              bgcolor: '#F9FAFB', 
+              color: '#6B7280',
               fontSize: '0.875rem',
-              fontWeight: 600,
+              fontWeight: 500,
+              fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+              border: '1px solid #E5E7EB',
             }}>
               Next reset (UTC) in {formatCountdown(remainMs)}
             </Box>

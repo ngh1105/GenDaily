@@ -4,7 +4,7 @@ import { Button, Stack, Popover, Card, CardContent, List, ListItemButton, ListIt
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { useState, useEffect } from "react";
 
-export default function ConnectWallet() {
+export default function ConnectWallet({ dark }: { dark: boolean }) {
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
   const { connectors, connect } = useConnect();
@@ -56,11 +56,11 @@ export default function ConnectWallet() {
           py: 0.8,
           fontWeight: 600,
           textTransform: 'none',
-          bgcolor: 'rgba(255,255,255,.1)',
-          color: 'inherit',
-          border: '1px solid rgba(255,255,255,.2)',
+          bgcolor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          color: dark ? '#FFFFFF' : '#111827',
+          border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.2)',
           '&:hover': {
-            bgcolor: 'rgba(255,255,255,.2)',
+            bgcolor: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
           },
         }}
         disabled
@@ -81,14 +81,14 @@ export default function ConnectWallet() {
             py: 0.8,
             fontWeight: 600,
             textTransform: 'none',
-            bgcolor: 'rgba(255,255,255,.1)',
-            color: 'inherit',
-            border: '1px solid rgba(255,255,255,.2)',
+            bgcolor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            color: dark ? '#FFFFFF' : '#111827',
+            border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.2)',
             display: 'flex',
             alignItems: 'center',
             gap: 1,
             '&:hover': {
-              bgcolor: 'rgba(255,255,255,.2)',
+              bgcolor: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
               transform: 'translateY(-1px)',
               boxShadow: '0 4px 12px rgba(0,0,0,.15)',
             },
@@ -97,7 +97,7 @@ export default function ConnectWallet() {
           onClick={() => disconnect()}
         >
           {generateAvatar(address || "")}
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: dark ? '#FFFFFF' : '#111827' }}>
             {short(address || "")}
           </Typography>
         </Button>
@@ -115,11 +115,11 @@ export default function ConnectWallet() {
           py: 0.8,
           fontWeight: 600,
           textTransform: 'none',
-          bgcolor: 'rgba(255,255,255,.1)',
-          color: 'inherit',
-          border: '1px solid rgba(255,255,255,.2)',
+          bgcolor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+          color: dark ? '#FFFFFF' : '#111827',
+          border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.2)',
           '&:hover': {
-            bgcolor: 'rgba(255,255,255,.2)',
+            bgcolor: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
             transform: 'translateY(-1px)',
             boxShadow: '0 4px 12px rgba(0,0,0,.15)',
           },
@@ -141,10 +141,10 @@ export default function ConnectWallet() {
             mt: 1, 
             borderRadius: 3, 
             width: 320,
-            bgcolor: 'rgba(255,255,255,.95)',
+            bgcolor: dark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
             backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,.35)',
-            boxShadow: '0 20px 60px rgba(2,6,23,.25)',
+            border: dark ? '1px solid rgba(255,255,255,0.35)' : '1px solid rgba(0,0,0,0.35)',
+            boxShadow: dark ? '0 20px 60px rgba(0,0,0,0.5)' : '0 20px 60px rgba(2,6,23,.25)',
           } 
         }}
       >
@@ -155,6 +155,7 @@ export default function ConnectWallet() {
               sx={{ 
                 mb: 2, 
                 fontWeight: 700,
+                color: dark ? '#FFFFFF' : '#111827',
                 background: 'linear-gradient(135deg, #1565c0, #39FF14)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
@@ -176,13 +177,13 @@ export default function ConnectWallet() {
                   sx={{ 
                     borderRadius: 2, 
                     mb: 1,
-                    border: '1px solid rgba(148,163,184,.15)',
+                    border: dark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(148,163,184,.15)',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      bgcolor: 'rgba(21,101,192,.05)',
-                      border: '1px solid rgba(21,101,192,.2)',
+                      bgcolor: dark ? 'rgba(255,255,255,0.05)' : 'rgba(21,101,192,.05)',
+                      border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(21,101,192,.2)',
                       transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 12px rgba(21,101,192,.1)',
+                      boxShadow: dark ? '0 4px 12px rgba(255,255,255,0.1)' : '0 4px 12px rgba(21,101,192,.1)',
                     },
                   }}
                 >
@@ -194,8 +195,8 @@ export default function ConnectWallet() {
                   <ListItemText 
                     primary={c.name} 
                     secondary={(c as { ready?: boolean }).ready ? "Ready to connect" : "Not installed"}
-                    primaryTypographyProps={{ fontWeight: 600 }}
-                    secondaryTypographyProps={{ fontSize: '0.75rem' }}
+                    primaryTypographyProps={{ fontWeight: 600, color: dark ? '#FFFFFF' : '#111827' }}
+                    secondaryTypographyProps={{ fontSize: '0.75rem', color: dark ? '#9CA3AF' : '#6B7280' }}
                   />
                   {(c as { ready?: boolean }).ready && (
                     <Chip 

@@ -135,17 +135,22 @@ await client.initializeConsensusSmartContract();
 - Recommendation: Initialize once on app boot or after wallet connect, before contract calls.
 
 ## Contract Interaction Examples
-- **Contract**: `DailyCheckinPyUTC`
-- **Address (StudioNet)**: > TODO: Set `address_studionet`
+- **Contract**: `GenDailyEnhanced`
+- **Address (StudioNet)**: `0x95758c22476ABC199C9A7698bFd083be84A08CF5`
 - **Methods**:
   - Write
-    - `check_in`: Check-in for the current UTC day
+    - `checkin_sentence(content_text)`: Enhanced check-in with content and scoring
+    - `set_policy(...)`: Admin configuration (owner only)
+    - `transfer_ownership(new_owner)`: Transfer ownership (owner only)
   - View
-    - `get_my_stats`: Return `{last_day, streak, total}`
+    - `get_my_stats`: Return `{last_day, streak, total, total_score}`
     - `is_checked_today`: Return `bool`
     - `current_day_index`: Return day index since 1970‑01‑01 UTC
     - `get_day_range_counts(start_day, end_day)`: Return array of counts per day
     - `next_reset_time`: UTC timestamp for next reset
+    - `my_today_cid`: Return CID of today's check-in
+    - `get_checkin(cid)`: Return detailed check-in data with scoring
+    - `get_policy`: Return current scoring policy
 
 ### Read: `get_my_stats`
 ```ts
@@ -154,15 +159,15 @@ const stats = await client.readContract({
   functionName: 'get_my_stats',
   args: [],
 });
-// -> { last_day, streak, total }
+// -> { last_day, streak, total, total_score }
 ```
 
-### Write + wait FINALIZED: `check_in`
+### Write + wait FINALIZED: `checkin_sentence`
 ```ts
 const hash = await client.writeContract({
   address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
-  functionName: 'check_in',
-  args: [],
+  functionName: 'checkin_sentence',
+  args: ["How was your day? What did you learn or build?"],
 });
 
 const receipt = await client.waitForTransactionReceipt({
@@ -188,23 +193,35 @@ const counts = await client.readContract({
 });
 ```
 
-### OPTIONAL: Appeal if still not FINALIZED after N polls
+### Enhanced: Get today's check-in details
 ```ts
-// OPTIONAL: appeal if still not finalized after N polls
-const appealHash = await client.appealTransaction({ txId: hash });
-await client.waitForTransactionReceipt({ hash: appealHash, status: 'FINALIZED' });
+const cid = await client.readContract({
+  address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+  functionName: 'my_today_cid',
+  args: [],
+});
+
+const checkin = await client.readContract({
+  address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+  functionName: 'get_checkin',
+  args: [cid],
+});
+// -> { cid, user, day_index, createdAt, contentText, contentChars, effort, quality, specificity, score_total, finalized }
 ```
 
-## API Reference (DailyCheckinPyUTC)
+## API Reference (GenDailyEnhanced)
 
 | Method | Type | Params | Returns | Notes |
 |---|---|---|---|---|
-| `check_in()` | write | – | `txHash` | One check per UTC day. UI waits for FINALIZED. |
-| `get_my_stats()` | view | – | `{ last_day: int, streak: int, total: int }` | `last_day` = UTC day index since 1970-01-01 |
+| `checkin_sentence(content_text)` | write | `str` | `txHash` | Enhanced check-in with content and scoring. UI waits for FINALIZED. |
+| `get_my_stats()` | view | – | `{ last_day: int, streak: int, total: int, total_score: int }` | `last_day` = UTC day index since 1970-01-01 |
 | `is_checked_today()` | view | – | `bool` | True if already checked in for current UTC day |
 | `current_day_index()` | view | – | `int` | `floor(unix_utc / 86400)` |
 | `get_day_range_counts(start, end)` | view | `int`, `int` | `int[]` | Inclusive range of day indices |
 | `next_reset_time()` | view | – | `int (unix)` | UTC timestamp of next daily reset |
+| `my_today_cid()` | view | – | `int` | CID of today's check-in (0 if none) |
+| `get_checkin(cid)` | view | `int` | `Dict` | Detailed check-in data with scoring breakdown |
+| `get_policy()` | view | – | `Dict` | Current scoring policy configuration |
 
 ## Business Logic & Workflow
 - **Time source**: UTC (`datetime.now(timezone.utc)` in contract).
@@ -212,10 +229,11 @@ await client.waitForTransactionReceipt({ hash: appealHash, status: 'FINALIZED' }
 - **Streak semantics**: Increment when checking in on consecutive UTC days; break on a missed day.
 - **TX flow**:
   1. Connect wallet (wagmi/RainbowKit).
-  2. Read today’s status and streak.
-  3. Write `check_in`.
+  2. Read today's status and streak.
+  3. Write `checkin_sentence` with content.
   4. Status: Accepted → FINALIZED (poll every 3–5s).
   5. Refetch stats on FINALIZED to update UI.
+  6. Display scoring breakdown (effort, quality, specificity).
 
 ## Local Dev & StudioNet Playbook
 
@@ -325,6 +343,6 @@ npm run start
 ## License & Credits
 - **License**: MIT. See [LICENSE](./LICENSE).
 - **Credits**:
-  - Contract: `DailyCheckinPyUTC` on StudioNet. > TODO: Add deployed address
+  - Contract: `GenDailyEnhanced` on StudioNet. Address: `0x95758c22476ABC199C9A7698bFd083be84A08CF5`
   - Stack: Next.js + TypeScript, MUI, wagmi, RainbowKit, React Query, ethers, genlayer‑js
 - **Project**: GenLayer Daily Check-in — Daily on-chain check-ins and streaks on GenLayer StudioNet.

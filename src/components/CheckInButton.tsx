@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button, Snackbar, Alert, Box } from "@mui/material";
-import { checkIn, getClient, TransactionStatus } from "../lib/genlayer";
+import { Button, Snackbar, Alert, Box, TextField, Stack, Tooltip } from "@mui/material";
+import { checkInWithContent, getClient, TransactionStatus } from "../lib/genlayer";
 
 type Props = {
   disabled?: boolean;
@@ -13,13 +13,14 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   const [snack, setSnack] = useState<{ open: boolean; msg: string; severity: "success" | "error" | "info" } | null>(null);
   const [mounted, setMounted] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [dailyContent, setDailyContent] = useState("");
   
   useEffect(() => setMounted(true), []);
 
   async function handleCheckIn() {
     setLoading(true);
     try {
-      const hash = await checkIn();
+      const hash = await checkInWithContent(dailyContent);
       setSnack({ open: true, msg: "Accepted… waiting for Finalized", severity: "info" });
       onAccepted?.();
       
@@ -27,9 +28,10 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
       getClient()
         .waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, retries: 200, interval: 3000 })
         .then(() => {
-          setSnack({ open: true, msg: "Finalized", severity: "success" });
+          setSnack({ open: true, msg: "🎉 You've checked in! +500 points earned.", severity: "success" });
           setShowConfetti(true);
           setTimeout(() => setShowConfetti(false), 2000);
+          setDailyContent(""); // Clear content after successful check-in
         })
         .catch(() => undefined);
     } catch (e: unknown) {
@@ -43,113 +45,213 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   // Avoid hydration mismatch: render stable markup until mounted
   if (!mounted) {
     return (
-      <Button variant="contained" disabled sx={{ px: 4, py: 1.4, borderRadius: 999 }}>
-        Check In
-      </Button>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 3,
+        width: '100%',
+        maxWidth: 600,
+        mx: 'auto',
+        mt: 6,
+      }}>
+        <TextField
+          multiline
+          rows={4}
+          placeholder="How was your day? What did you learn or build?"
+          disabled
+          sx={{ width: '100%' }}
+        />
+        <Button variant="contained" disabled sx={{ px: 6, py: 1.5, borderRadius: 2.5 }}>
+          Check In
+        </Button>
+      </Box>
     );
   }
 
   const getButtonText = () => {
     if (loading) return "Checking in...";
-    if (disabled) return "Checked";
+    if (disabled) return "Checked ✓";
     return "Check In";
   };
 
   return (
     <>
-      <Box sx={{ position: 'relative' }}>
-        {/* Confetti Effect */}
-        {showConfetti && (
-          <Box sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
-            zIndex: 1000,
-          }}>
-            {[...Array(12)].map((_, i) => (
-              <Box
-                key={i}
-                sx={{
-                  position: 'absolute',
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                    bgcolor: ['#39FF14', '#1565c0', '#ff6b6b', '#feca57'][i % 4],
-                  animation: `confetti 1.5s ease-out forwards`,
-                  animationDelay: `${i * 0.1}s`,
-                  '@keyframes confetti': {
-                    '0%': {
-                      transform: 'translate(0, 0) rotate(0deg)',
-                      opacity: 1,
-                    },
-                    '100%': {
-                      transform: `translate(${(Math.random() - 0.5) * 200}px, ${Math.random() * 200 + 100}px) rotate(720deg)`,
-                      opacity: 0,
-                    },
-                  },
-                }}
-              />
-            ))}
-          </Box>
-        )}
-
-        <Button
-          variant="contained"
-          disableElevation
+      {/* Check-in Container */}
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 3,
+        width: '100%',
+        maxWidth: 600,
+        mx: 'auto',
+        mt: 6,
+      }}>
+        {/* Textarea */}
+        <TextField
+          multiline
+          rows={4}
+          placeholder="How was your day? What did you learn or build?"
+          value={dailyContent}
+          onChange={(e) => setDailyContent(e.target.value)}
+          disabled={loading || disabled}
+          helperText={`${dailyContent.length} characters`}
           sx={{
-            px: 4, 
-            py: 1.4, 
-            borderRadius: 999, 
-            fontWeight: 800, 
-            textTransform: "none",
-            fontSize: '1.1rem',
-              bgcolor: '#1565c0',
-              boxShadow: '0 12px 28px rgba(21,101,192,.35)',
-            position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: '-100%',
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent)',
-              transition: 'left 0.5s',
-            },
-            '&:hover': {
-              transform: 'translateY(-1px)',
-              boxShadow: '0 16px 36px rgba(21,101,192,.45)',
-              '&::before': {
-                left: '100%',
+            width: '100%',
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2.5,
+              backgroundColor: '#F9FAFB',
+              border: '1px solid #E5E7EB',
+              fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+              minHeight: '110px',
+              padding: '14px 18px',
+              fontSize: '14px',
+              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                border: '1px solid #D1D5DB',
+                backgroundColor: '#FFFFFF',
+              },
+              '&.Mui-focused': {
+                border: '1px solid #3B82F6',
+                backgroundColor: '#FFFFFF',
+                boxShadow: '0 0 0 3px rgba(59,130,246,0.1)',
+              },
+              '&.Mui-disabled': {
+                backgroundColor: '#F3F4F6',
+                opacity: 0.7,
+                border: '1px solid #E5E7EB',
               },
             },
-            '&:active': {
-              transform: 'translateY(0px)',
-              boxShadow: '0 8px 20px rgba(21,101,192,.3)',
+            '& .MuiInputBase-input': {
+              color: '#111827',
+              fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+              fontWeight: 400,
+              fontSize: '13.5px',
+              lineHeight: 1.5,
+              '&::placeholder': {
+                color: '#9CA3AF',
+                opacity: 1,
+                lineHeight: 1.5,
+                fontSize: '13.5px',
+              },
             },
-            '&.Mui-disabled': { 
-              bgcolor: 'rgba(148,163,184,.25)', 
-              color: 'text.secondary',
-              boxShadow: 'none',
-              transform: 'none',
+            '& .MuiFormHelperText-root': {
+              color: '#6B7280',
+              fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+              fontWeight: 500,
+              fontSize: '12px',
             },
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
-          onClick={handleCheckIn}
-          disabled={loading || disabled}
-        >
-          {getButtonText()}
-        </Button>
+        />
+        
+        {/* Button Container */}
+        <Box sx={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
+          {/* Confetti Effect */}
+          {showConfetti && (
+            <Box sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+              zIndex: 1000,
+            }}>
+              {[...Array(12)].map((_, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    position: 'absolute',
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    bgcolor: ['#39FF14', '#1565c0', '#ff6b6b', '#feca57'][i % 4],
+                    animation: `confetti 1.5s ease-out forwards`,
+                    animationDelay: `${i * 0.1}s`,
+                    '@keyframes confetti': {
+                      '0%': {
+                        transform: 'translate(0, 0) rotate(0deg)',
+                        opacity: 1,
+                      },
+                      '100%': {
+                        transform: `translate(${(Math.random() - 0.5) * 200}px, ${Math.random() * 200 + 100}px) rotate(720deg)`,
+                        opacity: 0,
+                      },
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+
+          <Tooltip 
+            title={disabled ? "Bạn đã check-in hôm nay rồi!" : ""} 
+            placement="top"
+            arrow
+          >
+            <span>
+              <Button
+                variant="contained"
+                disableElevation
+                sx={{
+                  px: 6, 
+                  py: 1.5, 
+                  borderRadius: 2.5, 
+                  fontWeight: 600, 
+                  textTransform: "none",
+                  fontSize: '15px',
+                  fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+                  background: 'linear-gradient(90deg, #22C55E 0%, #16A34A 100%)',
+                  boxShadow: '0 4px 10px rgba(22,163,74,0.25)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  minWidth: '140px',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 6px 14px rgba(22,163,74,0.3)',
+                    background: 'linear-gradient(90deg, #22C55E 0%, #16A34A 100%)',
+                  },
+                  '&:active': {
+                    transform: 'translateY(0px) scale(0.98)',
+                    boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
+                  },
+                  '&.Mui-disabled': { 
+                    background: '#E5E7EB', 
+                    color: '#9CA3AF',
+                    boxShadow: 'none',
+                    transform: 'none',
+                    cursor: 'not-allowed',
+                    border: '1px solid #D1D5DB',
+                    '&:hover': {
+                      background: '#E5E7EB',
+                      transform: 'none',
+                      boxShadow: 'none',
+                    },
+                  },
+                  transition: 'all 0.2s ease',
+                }}
+                onClick={handleCheckIn}
+                disabled={loading || disabled}
+              >
+                {getButtonText()}
+              </Button>
+            </span>
+          </Tooltip>
+        </Box>
       </Box>
 
       <Snackbar 
         open={!!snack?.open} 
         autoHideDuration={4000} 
         onClose={() => setSnack(null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        sx={{
+          '& .MuiSnackbarContent-root': {
+            borderRadius: 3,
+            backdropFilter: 'blur(20px)',
+          }
+        }}
       >
         <Alert 
           onClose={() => setSnack(null)} 
@@ -159,7 +261,8 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
             width: "100%",
             borderRadius: 2,
             fontWeight: 600,
-            boxShadow: '0 8px 24px rgba(0,0,0,.15)',
+            fontFamily: '"Inter", "Outfit", "Manrope", sans-serif',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
           }}
         >
           {snack?.msg ?? ""}

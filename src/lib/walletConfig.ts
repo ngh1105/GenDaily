@@ -6,7 +6,7 @@ import { defineChain } from 'viem';
 export const studioNet = defineChain({
   id: 61999,
   name: 'GenLayer StudioNet',
-  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 },
   rpcUrls: {
     default: { http: ['https://studio.genlayer.com/api'] },
   },
