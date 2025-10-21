@@ -11,6 +11,9 @@ export function useMyStats() {
   return useQuery({
     queryKey: ["myStats", address, CONTRACT],
     queryFn: async () => {
+      if (!client) {
+        throw new Error("Client not initialized");
+      }
       const res = await client.readContract({ address: CONTRACT as `0x${string}`, functionName: "get_my_stats", args: [] });
       
       // Normalize: support tuple [last_day, streak, total, total_score] or object { last_day, streak, total, total_score }
@@ -57,6 +60,8 @@ export function useMyStats() {
     },
     enabled: Boolean(client && CONTRACT && address),
     refetchOnWindowFocus: false,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
 
@@ -65,8 +70,15 @@ export function useIsCheckedToday() {
   const { address } = useAccount();
   return useQuery({
     queryKey: ["checkedToday", CONTRACT, address],
-    queryFn: async () => client.readContract({ address: CONTRACT as `0x${string}`, functionName: "is_checked_today", args: [] }),
+    queryFn: async () => {
+      if (!client) {
+        throw new Error("Client not initialized");
+      }
+      return client.readContract({ address: CONTRACT as `0x${string}`, functionName: "is_checked_today", args: [] });
+    },
     enabled: Boolean(client && CONTRACT && address),
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
 
@@ -76,12 +88,17 @@ export function useLast7Counts() {
   return useQuery({
     queryKey: ["last7", address, CONTRACT],
     queryFn: async () => {
+      if (!client) {
+        throw new Error("Client not initialized");
+      }
       const day = await client.readContract({ address: CONTRACT as `0x${string}`, functionName: "current_day_index", args: [] });
       const start = Number(day) - 6;
       const arr = await client.readContract({ address: CONTRACT as `0x${string}`, functionName: "get_day_range_counts", args: [start, Number(day)] });
       return { arr: (arr as number[]).map(Number), start };
     },
     enabled: Boolean(client && CONTRACT && address),
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 }
 
@@ -90,7 +107,12 @@ export function useNextResetTime() {
   const { address } = useAccount();
   return useQuery({
     queryKey: ["nextReset", address, CONTRACT],
-    queryFn: async () => Number(await client.readContract({ address: CONTRACT as `0x${string}`, functionName: "next_reset_time", args: [] })),
+    queryFn: async () => {
+      if (!client) {
+        throw new Error("Client not initialized");
+      }
+      return Number(await client.readContract({ address: CONTRACT as `0x${string}`, functionName: "next_reset_time", args: [] }));
+    },
     enabled: Boolean(client && CONTRACT && address),
     refetchInterval: 30_000,
   });

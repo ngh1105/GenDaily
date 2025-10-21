@@ -18,10 +18,13 @@ export function useGenlayerClient() {
   const { address, isConnected } = useAccount();
 
   useEffect(() => {
-    // Initialize consensus using the centralized, idempotent wrapper
-    initializeConsensusSmartContract().catch((error) => {
-      console.error("Failed to initialize consensus smart contract in useGenlayerClient:", error);
-    });
+    // Only initialize if connected and has address
+    if (isConnected && address) {
+      // Initialize consensus using the centralized, idempotent wrapper
+      initializeConsensusSmartContract().catch((error) => {
+        console.error("Failed to initialize consensus smart contract in useGenlayerClient:", error);
+      });
+    }
   }, [isConnected, address]);
 
   // Return fresh client reference on each render
