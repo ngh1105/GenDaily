@@ -37,15 +37,6 @@ export default function StreakChart({ start, counts, loading, currentStreak: pro
     }
   }
   
-  // Debug log to check data consistency
-  console.log('StreakChart Debug:', {
-    propStreak,
-    lastDayIndex,
-    currentStreak,
-    calculatedStreak,
-    checkedCount,
-    items: items.map(item => ({ label: item.label, checked: item.checked })),
-  });
 
   return (
     <Box sx={{ width: "100%" }}>

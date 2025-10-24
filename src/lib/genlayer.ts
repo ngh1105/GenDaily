@@ -18,9 +18,9 @@ export function getClient() {
   return client;
 }
 
-const envAddress = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x95758c22476ABC199C9A7698bFd083be84A08CF5").trim();
+const envAddress = (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x362DAaCBaca07c64E7C9fa32787A6c1F0001A076").trim();
 export const hasValidContractAddress = /^0x[a-fA-F0-9]{40}$/.test(envAddress);
-export const contractAddress = (hasValidContractAddress ? (envAddress as Address) : ("0x95758c22476ABC199C9A7698bFd083be84A08CF5" as Address));
+export const contractAddress = (hasValidContractAddress ? (envAddress as Address) : ("0x362DAaCBaca07c64E7C9fa32787A6c1F0001A076" as Address));
 
 /**
  * Attaches a signer to the singleton client and resets initialization state.
@@ -67,11 +67,12 @@ export async function getMyStats() {
     console.warn("Contract address is not set, using default");
   }
   try {
-    return await client.readContract({
+    const result = await client.readContract({
       address: contractAddress,
       functionName: "get_my_stats",
       args: [],
     });
+    return result;
   } catch (error) {
     console.error("Error calling get_my_stats:", error);
     throw error;
@@ -138,12 +139,18 @@ export async function checkInWithContent(content: string) {
     throw new Error("Content must be non-empty");
   }
   
-  return client.writeContract({
-    address: contractAddress,
-    functionName: "checkin_sentence",
-    args: [trimmedContent],
-    value: BigInt(0),
-  });
+  try {
+    const result = await client.writeContract({
+      address: contractAddress,
+      functionName: "checkin_sentence",
+      args: [trimmedContent],
+      value: BigInt(0),
+    });
+    return result;
+  } catch (error) {
+    console.error("Error in checkInWithContent:", error);
+    throw error;
+  }
 }
 
 // Legacy check-in method (for backward compatibility)

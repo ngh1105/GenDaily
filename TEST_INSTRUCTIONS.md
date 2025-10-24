@@ -3,7 +3,7 @@
 ## Current Status
 ✅ **Server running**: http://localhost:3000  
 ✅ **GenLayer RPC**: https://studio.genlayer.com/api (tested and working)  
-✅ **Contract address**: 0x95758c22476ABC199C9A7698bFd083be84A08CF5  
+✅ **Contract address**: 0x362DAaCBaca07c64E7C9fa32787A6c1F0001A076  
 ❓ **Contract deployment**: Need to verify if contract is deployed  
 
 ## Test Steps

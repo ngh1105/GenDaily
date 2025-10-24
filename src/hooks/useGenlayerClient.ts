@@ -27,7 +27,6 @@ export function useGenlayerClient() {
         initializeConsensusSmartContract()
           .then(() => {
             setIsReady(true);
-            console.log("GenLayer client ready for queries");
           })
           .catch((error) => {
             console.error("Failed to initialize consensus smart contract in useGenlayerClient:", error);

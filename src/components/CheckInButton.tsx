@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { Button, Snackbar, Alert, Box, TextField, Tooltip } from "@mui/material";
-import { checkInWithContent, getClient, TransactionStatus, getMyStats } from "../lib/genlayer";
+import { getClient, TransactionStatus, getMyStats } from "../lib/genlayer";
+import { useCheckinAction } from "../hooks/useCheckinAction";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAccount } from "wagmi";
 
 interface StatsResponse {
   last_day?: number;
@@ -23,8 +26,15 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   const [dailyContent, setDailyContent] = useState("");
   const [previousTotalScore, setPreviousTotalScore] = useState<number | null>(null);
   
+  // Use the React Query mutation hook
+  const checkinMutation = useCheckinAction();
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+  
+  const CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x362DAaCBaca07c64E7C9fa32787A6c1F0001A076";
+  
   // Lifecycle guards and cleanup
-  const mountedRef = useRef<boolean>(true);
+  const mountedRef = useRef<boolean>(false);
   const timeoutsRef = useRef<Set<number>>(new Set());
   
   // Content validation constants
@@ -34,6 +44,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   
   useEffect(() => {
     setMounted(true);
+    mountedRef.current = true;
     
     // Cleanup function
     return () => {
@@ -46,7 +57,9 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
 
   async function handleCheckIn() {
     if (!mountedRef.current) return;
+    
     setLoading(true);
+    
     try {
       // Get current total score before check-in
       try {
@@ -54,11 +67,11 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
         const currentTotalScore = currentStats?.total_score ?? 0;
         setPreviousTotalScore(Number(currentTotalScore));
       } catch (error) {
-        console.warn("Could not fetch current stats:", error);
         setPreviousTotalScore(null);
       }
 
-      const hash = await checkInWithContent(content);
+      const hash = await checkinMutation.mutateAsync(content);
+      
       if (!mountedRef.current) return;
       
       setSnack({ open: true, msg: "Accepted… waiting for Finalized", severity: "info" });
@@ -69,6 +82,12 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
         .waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, retries: 200, interval: 3000 })
         .then(async () => {
           if (!mountedRef.current) return;
+          
+          // Invalidate all related queries to refresh the UI
+          queryClient.invalidateQueries({ queryKey: ["myStats", address, CONTRACT] });
+          queryClient.invalidateQueries({ queryKey: ["checkedToday", CONTRACT, address] });
+          queryClient.invalidateQueries({ queryKey: ["last7", address, CONTRACT] });
+          queryClient.invalidateQueries({ queryKey: ["nextReset", address, CONTRACT] });
           
           // Try to fetch actual points earned
           try {
@@ -85,7 +104,6 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
             
             setSnack({ open: true, msg: successMessage, severity: "success" });
           } catch (error) {
-            console.warn("Could not fetch points earned:", error);
             setSnack({ open: true, msg: "🎉 Check-in successful! Points earned.", severity: "success" });
           }
           
@@ -143,7 +161,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   }
 
   const getButtonText = () => {
-    if (loading) return "Checking in...";
+    if (loading || checkinMutation.isPending) return "Checking in...";
     if (disabled) return "Checked ✓";
     if (!isContentValid) return "Enter content to check in";
     return "Check In";
@@ -343,7 +361,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
                   transition: 'all 0.2s ease',
                 })}
                 onClick={handleCheckIn}
-                disabled={loading || disabled || !isContentValid}
+                disabled={loading || disabled || !isContentValid || checkinMutation.isPending}
               >
                 {getButtonText()}
               </Button>

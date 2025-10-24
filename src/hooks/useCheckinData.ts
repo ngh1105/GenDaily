@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useGenlayerClient } from "./useGenlayerClient";
 import { useAccount } from "wagmi";
 
-const CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x95758c22476ABC199C9A7698bFd083be84A08CF5";
+const CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x362DAaCBaca07c64E7C9fa32787A6c1F0001A076";
 
 export function useMyStats() {
   const { client, isReady } = useGenlayerClient();

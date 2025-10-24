@@ -17,7 +17,6 @@ export function useGenlayerSigner() {
         attachSigner(eth, address as `0x${string}`);
         // Update ref to track successful signer attachment for this address
         initializedAddressRef.current = address;
-        console.log(`Signer attached for address: ${address}`);
       }
     } else if (!isConnected || !address) {
       // Reset initialization state when disconnected or no address

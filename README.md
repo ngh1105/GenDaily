@@ -136,7 +136,7 @@ await client.initializeConsensusSmartContract();
 
 ## Contract Interaction Examples
 - **Contract**: `GenDailyEnhanced`
-- **Address (StudioNet)**: `0x95758c22476ABC199C9A7698bFd083be84A08CF5`
+- **Address (StudioNet)**: `0x362DAaCBaca07c64E7C9fa32787A6c1F0001A076`
 - **Methods**:
   - Write
     - `checkin_sentence(content_text)`: Enhanced check-in with content and scoring
@@ -343,6 +343,6 @@ npm run start
 ## License & Credits
 - **License**: MIT. See [LICENSE](./LICENSE).
 - **Credits**:
-  - Contract: `GenDailyEnhanced` on StudioNet. Address: `0x95758c22476ABC199C9A7698bFd083be84A08CF5`
+  - Contract: `GenDailyEnhanced` on StudioNet. Address: `0x362DAaCBaca07c64E7C9fa32787A6c1F0001A076`
   - Stack: Next.js + TypeScript, MUI, wagmi, RainbowKit, React Query, ethers, genlayer‑js
 - **Project**: GenLayer Daily Check-in — Daily on-chain check-ins and streaks on GenLayer StudioNet.

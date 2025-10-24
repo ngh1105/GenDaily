@@ -4,7 +4,7 @@ import { useGenlayerClient } from "./useGenlayerClient";
 import { TransactionStatus } from "../lib/genlayer";
 import { useAccount } from "wagmi";
 
-const CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x95758c22476ABC199C9A7698bFd083be84A08CF5";
+const CONTRACT = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x362DAaCBaca07c64E7C9fa32787A6c1F0001A076";
 
 export function useCheckinAction() {
   const qc = useQueryClient();
@@ -23,14 +23,16 @@ export function useCheckinAction() {
         args: [content],
         value: BigInt(0),
       });
-      await client.waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, retries: 100, interval: 3000 });
       return hash;
     },
-    onSuccess: () => {
+    onSuccess: (hash) => {
       qc.invalidateQueries({ queryKey: ["myStats", address, CONTRACT] });
       qc.invalidateQueries({ queryKey: ["checkedToday", CONTRACT, address] });
       qc.invalidateQueries({ queryKey: ["last7", address, CONTRACT] });
       qc.invalidateQueries({ queryKey: ["nextReset", address, CONTRACT] });
+    },
+    onError: (error) => {
+      console.error("Error in useCheckinAction:", error);
     },
   });
 }
