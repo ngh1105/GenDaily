@@ -4,7 +4,7 @@ Daily on-chain check-ins and streaks on GenLayer StudioNet.
 
 
 - **Repo**: https://github.com/<org>/<repo>
-- **Demo**: https://<your-demo-url>
+- **Demo**: https://gen-daily.vercel.app/
 
 ## Versions
 | Tool | Version |
