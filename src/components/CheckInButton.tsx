@@ -35,7 +35,7 @@ export default function CheckInButton({ disabled, onAccepted }: Props) {
   
   // Lifecycle guards and cleanup
   const mountedRef = useRef<boolean>(false);
-  const timeoutsRef = useRef<Set<number>>(new Set());
+  const timeoutsRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
   
   // Content validation constants
   const MAX_CONTENT = 280;
