@@ -1,12 +1,30 @@
 "use client";
 import { AppBar, Toolbar, Typography, IconButton, Stack, Tooltip, Box } from "@mui/material";
-import { Brightness4, Brightness7 } from "@mui/icons-material";
+import { Brightness4, Brightness7, Refresh } from "@mui/icons-material";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 const ConnectWallet = dynamic(() => import("./ConnectWallet"), { ssr: false });
 
 type Props = { dark: boolean; toggleDark: () => void };
 
 export default function Navbar({ dark, toggleDark }: Props) {
+  const queryClient = useQueryClient();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Invalidate and refetch all queries
+      await queryClient.invalidateQueries();
+      // Explicitly refetch all active queries
+      await queryClient.refetchQueries();
+    } finally {
+      // Add a small delay to show the rotation animation
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
+
   return (
     <AppBar 
       position="sticky" 
@@ -48,6 +66,38 @@ export default function Navbar({ dark, toggleDark }: Props) {
         
         {/* Controls */}
         <Stack direction="row" spacing={1} alignItems="center">
+          <Tooltip title="Refresh data">
+            <IconButton 
+              color="inherit" 
+              aria-label="refresh data" 
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              sx={{
+                bgcolor: dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+                border: dark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.2)',
+                borderRadius: 2,
+                p: 1,
+                color: dark ? '#FFFFFF' : '#111827',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  bgcolor: dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                },
+                '&:disabled': {
+                  opacity: 0.6,
+                },
+              }}
+            >
+              <Refresh 
+                sx={{ 
+                  transform: isRefreshing ? 'rotate(360deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.5s ease-in-out',
+                }} 
+              />
+            </IconButton>
+          </Tooltip>
+          
           <Tooltip title={dark ? "Switch to light" : "Switch to dark"}>
             <IconButton 
               color="inherit" 
