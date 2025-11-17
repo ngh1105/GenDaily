@@ -2,7 +2,7 @@
 import { AppBar, Toolbar, Typography, IconButton, Stack, Tooltip, Box } from "@mui/material";
 import { Brightness4, Brightness7, Refresh } from "@mui/icons-material";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 const ConnectWallet = dynamic(() => import("./ConnectWallet"), { ssr: false });
 
@@ -11,8 +11,24 @@ type Props = { dark: boolean; toggleDark: () => void };
 export default function Navbar({ dark, toggleDark }: Props) {
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleRefresh = async () => {
+    // Clear any existing timeout before starting a new one
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
     setIsRefreshing(true);
     try {
       // Invalidate and refetch all queries
@@ -21,7 +37,10 @@ export default function Navbar({ dark, toggleDark }: Props) {
       await queryClient.refetchQueries();
     } finally {
       // Add a small delay to show the rotation animation
-      setTimeout(() => setIsRefreshing(false), 500);
+      timeoutRef.current = setTimeout(() => {
+        setIsRefreshing(false);
+        timeoutRef.current = null;
+      }, 500);
     }
   };
 
